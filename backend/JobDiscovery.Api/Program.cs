@@ -1,8 +1,6 @@
-
 using JobDiscovery.Api.Clients.Ashby;
 using JobDiscovery.Api.Configuration;
 using Microsoft.Extensions.Options;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,12 +9,43 @@ builder.Services.Configure<AshbyOptions>(
 );
 
 builder.Services.AddHttpClient<AshbyClient>(
-    (ServiceProvider, HttpClient) =>
+    (serviceProvider, httpClient) =>
     {
-        var options = ServiceProvider
+        var options = serviceProvider
             .GetRequiredService<IOptions<AshbyOptions>>()
             .Value;
 
-        HttpClient.BaseAddress = new Uri(options.BaseUrl);
+        httpClient.BaseAddress = new Uri(options.BaseUrl);
     }
 );
+
+var app = builder.Build();
+
+app.MapGet(
+    "/api/jobs",
+    async ( 
+        AshbyClient ashbyClient,
+        CancellationToken cancellationToken
+    ) =>
+    {
+        var response = await ashbyClient.GetJobsAsync(cancellationToken);
+
+        var remoteJobs = response.Jobs
+            .Where(job => 
+                job.IsListed && 
+                (
+                    job.IsRemote == true || 
+                    string.Equals(
+                        job.WorkplaceType,
+                        "Remote",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+            )
+            .ToList();
+
+        return Results.Ok(remoteJobs);
+    }
+);
+
+app.Run();
