@@ -8,7 +8,7 @@ public sealed class AshbyJob
 
   public string Location { get; init; } = string.Empty;
 
-  public bool IsRemote { get; init; }
+  public bool? IsRemote { get; init; }
 
   public string WorkplaceType { get; init; } = string.Empty;
 
