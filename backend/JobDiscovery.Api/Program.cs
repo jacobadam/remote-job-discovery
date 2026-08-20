@@ -33,14 +33,11 @@ app.MapGet(
         var remoteJobs = response.Jobs
             .Where(job => 
                 job.IsListed && 
-                (
-                    job.IsRemote == true || 
                     string.Equals(
                         job.WorkplaceType,
                         "Remote",
                         StringComparison.OrdinalIgnoreCase
                     )
-                )
             )
             .ToList();
 
