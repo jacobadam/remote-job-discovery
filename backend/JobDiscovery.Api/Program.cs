@@ -1,7 +1,7 @@
 using JobDiscovery.Api.Clients.Ashby;
 using JobDiscovery.Api.Configuration;
 using Microsoft.Extensions.Options;
-using JobDiscovery.Api.Models.Jobs;
+using JobDiscovery.Api.Services.Ashby;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,53 +20,22 @@ builder.Services.AddHttpClient<AshbyClient>(
     }
 );
 
+builder.Services.AddScoped<AshbyJobService>();
+
 var app = builder.Build();
 
 app.MapGet(
     "/api/jobs",
-    async ( 
-        AshbyClient ashbyClient,
-        IOptions<AshbyOptions> ashbyOptions,
+    async (
+        AshbyJobService jobService,
         CancellationToken cancellationToken
     ) =>
-    {   
-        var jobListings = new List<JobListing>();
+    {
+        var jobs = await jobService.GetRemoteJobsAsync(
+            cancellationToken
+        );
 
-        foreach (var comapny in ashbyOptions.Value.Companies)
-        {
-            var response = await ashbyClient.GetJobsAsync(
-                comapny.JobBoardName,
-                cancellationToken
-            );
-
-            var companyJobs = response.Jobs
-                .Where(job => 
-                job.IsListed &&
-                string.Equals(
-                    job.WorkplaceType,
-                    "Remote",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            ).Select(job => new JobListing
-            {
-                Source = "Ashby",
-                SourceJobId = job.Id,
-                CompanyName = comapny.Name,
-                Title = job.Title.Trim(),
-                Location = job.Location.Trim(),
-                WorkplaceType = job.WorkplaceType,
-                PublishedAt = job.PublishedAt,
-                JobUrl = job.JobUrl,
-                ApplyUrl = job.ApplyUrl
-            });
-
-            jobListings.AddRange(companyJobs);
-        }
-        var orderedJobs = jobListings
-            .OrderByDescending(job => job.PublishedAt)
-            .ToList();
-
-        return Results.Ok(orderedJobs);
+        return Results.Ok(jobs);
     }
 );
 
