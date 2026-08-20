@@ -11,7 +11,7 @@ public sealed class JobListing
 
   public string Location { get; init; } = string.Empty;
 
-  public string WorkPlaceType { get; init; } = string.Empty;
+  public string WorkplaceType { get; init; } = string.Empty;
 
   public DateTimeOffset? PublishedAt { get; init; }
 

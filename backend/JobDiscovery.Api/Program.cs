@@ -54,7 +54,7 @@ app.MapGet(
                 CompanyName = comapny.Name,
                 Title = job.Title,
                 Location = job.Location,
-                WorkPlaceType = job.WorkplaceType,
+                WorkplaceType = job.WorkplaceType,
                 PublishedAt = job.PublishedAt,
                 JobUrl = job.JobUrl,
                 ApplyUrl = job.ApplyUrl
