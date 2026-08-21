@@ -105,6 +105,85 @@ public sealed class AshbyJobServiceTests
         Assert.Equal("Ashby", job.Source);
     }
 
+    [Fact]
+public async Task GetRemoteJobsAsync_OrdersJobsByPublishedDateDescending()
+{
+    // Arrange
+    const string json = """
+    {
+      "apiVersion": "1",
+      "jobs": [
+        {
+          "id": "older-job",
+          "title": "Older Job",
+          "location": "Remote - UK",
+          "workplaceType": "Remote",
+          "publishedAt": "2026-07-01T10:00:00+00:00",
+          "isListed": true,
+          "jobUrl": "https://example.com/older-job",
+          "applyUrl": "https://example.com/older-job/apply"
+        },
+        {
+          "id": "newer-job",
+          "title": "Newer Job",
+          "location": "Remote - UK",
+          "workplaceType": "Remote",
+          "publishedAt": "2026-08-01T10:00:00+00:00",
+          "isListed": true,
+          "jobUrl": "https://example.com/newer-job",
+          "applyUrl": "https://example.com/newer-job/apply"
+        }
+      ]
+    }
+    """;
+
+    var messageHandler = new StubHttpMessageHandler(
+        new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(
+                json,
+                Encoding.UTF8,
+                "application/json"
+            )
+        }
+    );
+
+    var httpClient = new HttpClient(messageHandler)
+    {
+        BaseAddress = new Uri(
+            "https://api.ashbyhq.com/posting-api/job-board/"
+        )
+    };
+
+    var ashbyClient = new AshbyClient(httpClient);
+
+    var options = Options.Create(
+        new AshbyOptions
+        {
+            Companies =
+            [
+                new AshbyCompanyOptions
+                {
+                    Name = "Test Company",
+                    JobBoardName = "test-company"
+                }
+            ]
+        }
+    );
+
+    var service = new AshbyJobService(
+        ashbyClient,
+        options,
+        NullLogger<AshbyJobService>.Instance
+    );
+
+    var jobs = await service.GetRemoteJobsAsync();
+
+    Assert.Equal(2, jobs.Count);
+    Assert.Equal("newer-job", jobs[0].SourceJobId);
+    Assert.Equal("older-job", jobs[1].SourceJobId);
+}
+
     private sealed class StubHttpMessageHandler : HttpMessageHandler
     {
         private readonly HttpResponseMessage _response;
