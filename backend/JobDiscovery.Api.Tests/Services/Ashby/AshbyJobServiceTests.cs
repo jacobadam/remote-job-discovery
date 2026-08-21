@@ -106,10 +106,9 @@ public sealed class AshbyJobServiceTests
     }
 
     [Fact]
-public async Task GetRemoteJobsAsync_OrdersJobsByPublishedDateDescending()
-{
-    // Arrange
-    const string json = """
+    public async Task GetRemoteJobsAsync_OrdersJobsByPublishedDateDescending()
+    {
+        const string json = """
     {
       "apiVersion": "1",
       "jobs": [
@@ -137,52 +136,52 @@ public async Task GetRemoteJobsAsync_OrdersJobsByPublishedDateDescending()
     }
     """;
 
-    var messageHandler = new StubHttpMessageHandler(
-        new HttpResponseMessage(HttpStatusCode.OK)
+        var messageHandler = new StubHttpMessageHandler(
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    json,
+                    Encoding.UTF8,
+                    "application/json"
+                )
+            }
+        );
+
+        var httpClient = new HttpClient(messageHandler)
         {
-            Content = new StringContent(
-                json,
-                Encoding.UTF8,
-                "application/json"
+            BaseAddress = new Uri(
+                "https://api.ashbyhq.com/posting-api/job-board/"
             )
-        }
-    );
+        };
 
-    var httpClient = new HttpClient(messageHandler)
-    {
-        BaseAddress = new Uri(
-            "https://api.ashbyhq.com/posting-api/job-board/"
-        )
-    };
+        var ashbyClient = new AshbyClient(httpClient);
 
-    var ashbyClient = new AshbyClient(httpClient);
-
-    var options = Options.Create(
-        new AshbyOptions
-        {
-            Companies =
-            [
-                new AshbyCompanyOptions
+        var options = Options.Create(
+            new AshbyOptions
+            {
+                Companies =
+                [
+                    new AshbyCompanyOptions
                 {
                     Name = "Test Company",
                     JobBoardName = "test-company"
                 }
-            ]
-        }
-    );
+                ]
+            }
+        );
 
-    var service = new AshbyJobService(
-        ashbyClient,
-        options,
-        NullLogger<AshbyJobService>.Instance
-    );
+        var service = new AshbyJobService(
+            ashbyClient,
+            options,
+            NullLogger<AshbyJobService>.Instance
+        );
 
-    var jobs = await service.GetRemoteJobsAsync();
+        var jobs = await service.GetRemoteJobsAsync();
 
-    Assert.Equal(2, jobs.Count);
-    Assert.Equal("newer-job", jobs[0].SourceJobId);
-    Assert.Equal("older-job", jobs[1].SourceJobId);
-}
+        Assert.Equal(2, jobs.Count);
+        Assert.Equal("newer-job", jobs[0].SourceJobId);
+        Assert.Equal("older-job", jobs[1].SourceJobId);
+    }
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler
     {
