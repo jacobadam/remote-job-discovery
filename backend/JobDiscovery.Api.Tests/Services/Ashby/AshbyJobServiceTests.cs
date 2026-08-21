@@ -183,20 +183,113 @@ public sealed class AshbyJobServiceTests
         Assert.Equal("older-job", jobs[1].SourceJobId);
     }
 
+    [Fact]
+    public async Task GetRemoteJobsAsync_ContinuesWhenOneCompanyRequestFails()
+    {
+        const string successfulJson = """
+    {
+      "apiVersion": "1",
+      "jobs": [
+        {
+          "id": "successful-job",
+          "title": "Software Engineer",
+          "location": "Remote - UK",
+          "workplaceType": "Remote",
+          "publishedAt": "2026-08-10T10:00:00+00:00",
+          "isListed": true,
+          "jobUrl": "https://example.com/successful-job",
+          "applyUrl": "https://example.com/successful-job/apply"
+        }
+      ]
+    }
+    """;
+
+        var messageHandler = new StubHttpMessageHandler(request =>
+        {
+            var jobBoardName = request.RequestUri?.Segments.Last();
+
+            if (jobBoardName == "failed-company")
+            {
+                return new HttpResponseMessage(
+                    HttpStatusCode.InternalServerError
+                );
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    successfulJson,
+                    Encoding.UTF8,
+                    "application/json"
+                )
+            };
+        });
+
+        var httpClient = new HttpClient(messageHandler)
+        {
+            BaseAddress = new Uri(
+                "https://api.ashbyhq.com/posting-api/job-board/"
+            )
+        };
+
+        var ashbyClient = new AshbyClient(httpClient);
+
+        var options = Options.Create(
+            new AshbyOptions
+            {
+                Companies =
+                [
+                    new AshbyCompanyOptions
+                {
+                    Name = "Failed Company",
+                    JobBoardName = "failed-company"
+                },
+                new AshbyCompanyOptions
+                {
+                    Name = "Successful Company",
+                    JobBoardName = "successful-company"
+                }
+                ]
+            }
+        );
+
+        var service = new AshbyJobService(
+            ashbyClient,
+            options,
+            NullLogger<AshbyJobService>.Instance
+        );
+
+        var jobs = await service.GetRemoteJobsAsync();
+
+        var job = Assert.Single(jobs);
+
+        Assert.Equal("successful-job", job.SourceJobId);
+        Assert.Equal("Successful Company", job.CompanyName);
+    }
+
     private sealed class StubHttpMessageHandler : HttpMessageHandler
     {
-        private readonly HttpResponseMessage _response;
+        private readonly Func<HttpRequestMessage, HttpResponseMessage>
+            _responseFactory;
 
         public StubHttpMessageHandler(HttpResponseMessage response)
         {
-            _response = response;
+            _responseFactory = _ => response;
+        }
+
+        public StubHttpMessageHandler(
+            Func<HttpRequestMessage, HttpResponseMessage> responseFactory)
+        {
+            _responseFactory = responseFactory;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            return Task.FromResult(_response);
+            var response = _responseFactory(request);
+
+            return Task.FromResult(response);
         }
     }
 }
