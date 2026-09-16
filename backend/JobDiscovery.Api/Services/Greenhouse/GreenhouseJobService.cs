@@ -13,9 +13,9 @@ public sealed class GreenhouseJobService
     private readonly ILogger<GreenhouseJobService> _logger;
 
     public GreenhouseJobService(
-      GreenhouseClient greenhouseClient,
-      IOptions<GreenhouseOptions> options,
-      ILogger<GreenhouseJobService> logger)
+        GreenhouseClient greenhouseClient,
+        IOptions<GreenhouseOptions> options,
+        ILogger<GreenhouseJobService> logger)
     {
         _greenhouseClient = greenhouseClient;
         _options = options.Value;
@@ -23,7 +23,7 @@ public sealed class GreenhouseJobService
     }
 
     public async Task<IReadOnlyList<JobListing>> GetRemoteJobsAsync(
-      CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         var jobListings = new List<JobListing>();
 
@@ -32,29 +32,26 @@ public sealed class GreenhouseJobService
             try
             {
                 var response = await _greenhouseClient.GetJobsAsync(
-                  company.BoardToken,
-                  cancellationToken
+                    company.BoardToken,
+                    cancellationToken
                 );
 
                 var companyJobs = response.Jobs
-                  .Where(job =>
-                    job.Location.Name.Contains(
-                      "remote",
-                      StringComparison.OrdinalIgnoreCase
+                    .Where(job =>
+                        IsUkEligibleRemoteLocation(job.Location.Name)
                     )
-                  )
-                  .Select(job => new JobListing
-                  {
-                      Source = "Greenhouse",
-                      SourceJobId = job.Id.ToString(),
-                      CompanyName = company.Name,
-                      Title = job.Title.Trim(),
-                      Location = job.Location.Name.Trim(),
-                      WorkplaceType = "Remote",
-                      PublishedAt = job.FirstPublished,
-                      JobUrl = job.AbsoluteUrl,
-                      ApplyUrl = job.AbsoluteUrl
-                  });
+                    .Select(job => new JobListing
+                    {
+                        Source = "Greenhouse",
+                        SourceJobId = job.Id.ToString(),
+                        CompanyName = company.Name,
+                        Title = job.Title.Trim(),
+                        Location = job.Location.Name.Trim(),
+                        WorkplaceType = "Remote",
+                        PublishedAt = job.FirstPublished,
+                        JobUrl = job.AbsoluteUrl,
+                        ApplyUrl = job.AbsoluteUrl
+                    });
 
                 jobListings.AddRange(companyJobs);
             }
@@ -70,14 +67,32 @@ public sealed class GreenhouseJobService
             catch (JsonException exception)
             {
                 _logger.LogWarning(
-                exception,
-                "Failed to read the Greenhouse response for {CompanyName}.",
-                company.Name
-              );
+                    exception,
+                    "Failed to read the Greenhouse response for {CompanyName}.",
+                    company.Name
+                );
             }
         }
+
         return jobListings
-          .OrderByDescending(job => job.PublishedAt)
-          .ToList();
+            .OrderByDescending(job => job.PublishedAt)
+            .ToList();
+    }
+
+    private static bool IsUkEligibleRemoteLocation(string location)
+    {
+        return location.Contains(
+                "United Kingdom",
+                StringComparison.OrdinalIgnoreCase
+            )
+            || location.Contains(
+                "Remote (UK)",
+                StringComparison.OrdinalIgnoreCase
+            )
+            || string.Equals(
+                location.Trim(),
+                "Remote",
+                StringComparison.OrdinalIgnoreCase
+            );
     }
 }
