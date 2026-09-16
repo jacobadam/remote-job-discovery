@@ -49,7 +49,7 @@ app.MapGet(
         GreenhouseJobService greenhouseJobService,
         CancellationToken cancellationToken
     ) =>
-    {   
+    {
         var ashbyJobsTask = ashbyJobService.GetRemoteJobsAsync(
             cancellationToken
         );
