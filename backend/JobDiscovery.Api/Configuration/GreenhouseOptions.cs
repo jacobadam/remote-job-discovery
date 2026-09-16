@@ -8,10 +8,3 @@ public sealed class GreenhouseOptions
 
     public List<GreenhouseCompanyOptions> Companies { get; init; } = [];
 }
-
-public sealed class GreenhouseCompanyOptions
-{
-    public string Name { get; init; } = string.Empty;
-
-    public string BoardToken { get; init; } = string.Empty;
-}

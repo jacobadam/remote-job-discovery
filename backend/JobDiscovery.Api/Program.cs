@@ -1,7 +1,9 @@
-using JobDiscovery.Api.Clients.Ashby;
 using JobDiscovery.Api.Configuration;
 using Microsoft.Extensions.Options;
+using JobDiscovery.Api.Clients.Ashby;
 using JobDiscovery.Api.Services.Ashby;
+using JobDiscovery.Api.Clients.Greenhouse;
+using JobDiscovery.Api.Services.Greenhouse;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +22,23 @@ builder.Services.AddHttpClient<AshbyClient>(
     }
 );
 
+builder.Services.Configure<GreenhouseOptions>(
+    builder.Configuration.GetSection(GreenhouseOptions.SectionName)
+);
+
+builder.Services.AddHttpClient<GreenhouseClient>(
+    (serviceProvider, httpClient) =>
+    {
+        var options = serviceProvider
+            .GetRequiredService<IOptions<GreenhouseOptions>>()
+            .Value;
+
+        httpClient.BaseAddress = new Uri(options.BaseUrl);
+    }
+);
+
 builder.Services.AddScoped<AshbyJobService>();
+builder.Services.AddScoped<GreenhouseJobService>();
 
 var app = builder.Build();
 
