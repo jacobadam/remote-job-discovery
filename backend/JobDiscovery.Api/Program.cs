@@ -47,6 +47,7 @@ app.MapGet(
     async (
         AshbyJobService ashbyJobService,
         GreenhouseJobService greenhouseJobService,
+        string? title,
         CancellationToken cancellationToken
     ) =>
     {
@@ -64,11 +65,23 @@ app.MapGet(
         );
 
         var jobs = jobLists
-            .SelectMany(jobList => jobList)
+            .SelectMany(jobList => jobList);
+
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            jobs = jobs.Where(job =>
+                job.Title.Contains(
+                    title.Trim(),
+                    StringComparison.OrdinalIgnoreCase
+                )
+            );
+        }
+
+        var orderedJobs = jobs
             .OrderByDescending(job => job.PublishedAt)
             .ToList();
 
-        return Results.Ok(jobs);
+        return Results.Ok(orderedJobs);
     }
 );
 
