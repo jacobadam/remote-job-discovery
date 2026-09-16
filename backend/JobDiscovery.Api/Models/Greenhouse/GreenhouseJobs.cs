@@ -4,7 +4,7 @@ namespace JobDiscovery.Api.Models.Greenhouse;
 
 public sealed class GreenhouseJob
 {
-    public int Id { get; init; }
+    public long Id { get; init; }
 
     public string Title { get; init; } = string.Empty;
 

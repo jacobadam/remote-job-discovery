@@ -17,7 +17,7 @@ public sealed class GreenhouseJobServiceTests
       {
         "jobs": [
           {
-            "id": 1001,
+            "id": 8711638002,
             "title": "Remote Software Engineer",
             "company_name": "Monzo",
             "location": {
@@ -86,7 +86,7 @@ public sealed class GreenhouseJobServiceTests
 
         var job = Assert.Single(jobs);
 
-        Assert.Equal("1001", job.SourceJobId);
+        Assert.Equal("8711638002", job.SourceJobId);
         Assert.Equal("Monzo", job.CompanyName);
         Assert.Equal("Remote Software Engineer", job.Title);
         Assert.Equal(
