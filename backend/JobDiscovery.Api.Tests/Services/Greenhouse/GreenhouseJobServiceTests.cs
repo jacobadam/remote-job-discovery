@@ -29,10 +29,10 @@ public sealed class GreenhouseJobServiceTests
           },
           {
             "id": 1002,
-            "title": "Office Software Engineer",
+            "title": "US Remote Software Engineer",
             "company_name": "Monzo",
             "location": {
-              "name": "London"
+              "name": "United States (Remote)"
             },
             "first_published": "2026-08-11T10:00:00+00:00",
             "updated_at": "2026-08-12T10:00:00+00:00",
@@ -113,7 +113,7 @@ public sealed class GreenhouseJobServiceTests
           "title": "Older Job",
           "company_name": "Monzo",
           "location": {
-            "name": "Remote - UK"
+            "name": "United Kingdom (Remote)"
           },
           "first_published": "2026-07-01T10:00:00+00:00",
           "updated_at": "2026-07-01T10:00:00+00:00",
@@ -124,7 +124,7 @@ public sealed class GreenhouseJobServiceTests
           "title": "Newer Job",
           "company_name": "Monzo",
           "location": {
-            "name": "Remote - UK"
+            "name": "United Kingdom (Remote)"
           },
           "first_published": "2026-08-01T10:00:00+00:00",
           "updated_at": "2026-08-01T10:00:00+00:00",
@@ -192,7 +192,7 @@ public sealed class GreenhouseJobServiceTests
           "title": "Software Engineer",
           "company_name": "Successful Company",
           "location": {
-            "name": "Remote - UK"
+            "name": "United Kingdom (Remote)"
           },
           "first_published": "2026-08-10T10:00:00+00:00",
           "updated_at": "2026-08-11T10:00:00+00:00",
