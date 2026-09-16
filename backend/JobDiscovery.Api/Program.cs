@@ -45,13 +45,28 @@ var app = builder.Build();
 app.MapGet(
     "/api/jobs",
     async (
-        AshbyJobService jobService,
+        AshbyJobService ashbyJobService,
+        GreenhouseJobService greenhouseJobService,
         CancellationToken cancellationToken
     ) =>
-    {
-        var jobs = await jobService.GetRemoteJobsAsync(
+    {   
+        var ashbyJobsTask = ashbyJobService.GetRemoteJobsAsync(
             cancellationToken
         );
+
+        var greenhouseJobsTask = greenhouseJobService.GetRemoteJobsAsync(
+            cancellationToken
+        );
+
+        var jobLists = await Task.WhenAll(
+            ashbyJobsTask,
+            greenhouseJobsTask
+        );
+
+        var jobs = jobLists
+            .SelectMany(jobList => jobList)
+            .OrderByDescending(job => job.PublishedAt)
+            .ToList();
 
         return Results.Ok(jobs);
     }
