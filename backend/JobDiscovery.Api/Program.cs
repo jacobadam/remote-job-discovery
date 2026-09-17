@@ -52,7 +52,7 @@ app.MapGet(
     ) =>
     {
         var jobTasks = jobProviders
-            .Select(provider => 
+            .Select(provider =>
             provider.GetRemoteJobsAsync(cancellationToken)
         );
 

@@ -4,7 +4,7 @@ namespace JobDiscovery.Api.Services;
 
 public interface IJobProvider
 {
-  Task<IReadOnlyList<JobListing>> GetRemoteJobsAsync(
-    CancellationToken cancellationToken = default
-  );
+    Task<IReadOnlyList<JobListing>> GetRemoteJobsAsync(
+      CancellationToken cancellationToken = default
+    );
 }
