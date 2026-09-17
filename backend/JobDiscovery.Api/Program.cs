@@ -4,6 +4,7 @@ using JobDiscovery.Api.Clients.Ashby;
 using JobDiscovery.Api.Services.Ashby;
 using JobDiscovery.Api.Clients.Greenhouse;
 using JobDiscovery.Api.Services.Greenhouse;
+using JobDiscovery.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,8 +38,8 @@ builder.Services.AddHttpClient<GreenhouseClient>(
     }
 );
 
-builder.Services.AddScoped<AshbyJobService>();
-builder.Services.AddScoped<GreenhouseJobService>();
+builder.Services.AddScoped<IJobProvider, AshbyJobService>();
+builder.Services.AddScoped<IJobProvider, GreenhouseJobService>();
 
 var app = builder.Build();
 

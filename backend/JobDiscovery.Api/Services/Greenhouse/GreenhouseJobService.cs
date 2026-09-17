@@ -2,11 +2,12 @@ using System.Text.Json;
 using JobDiscovery.Api.Clients.Greenhouse;
 using JobDiscovery.Api.Configuration;
 using JobDiscovery.Api.Models.Jobs;
+using JobDiscovery.Api.Services;
 using Microsoft.Extensions.Options;
 
 namespace JobDiscovery.Api.Services.Greenhouse;
 
-public sealed class GreenhouseJobService
+public sealed class GreenhouseJobService : IJobProvider
 {
     private readonly GreenhouseClient _greenhouseClient;
     private readonly GreenhouseOptions _options;

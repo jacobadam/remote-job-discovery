@@ -2,11 +2,12 @@ using System.Text.Json;
 using JobDiscovery.Api.Clients.Ashby;
 using JobDiscovery.Api.Configuration;
 using JobDiscovery.Api.Models.Jobs;
+using JobDiscovery.Api.Services;
 using Microsoft.Extensions.Options;
 
 namespace JobDiscovery.Api.Services.Ashby;
 
-public sealed class AshbyJobService
+public sealed class AshbyJobService : IJobProvider
 {
     private readonly AshbyClient _ashbyClient;
     private readonly AshbyOptions _options;
