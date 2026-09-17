@@ -1,6 +1,6 @@
-using JobDiscovery.Api.Models.Jobs
+using JobDiscovery.Api.Models.Jobs;
 
-namespace JobDiscovery.Api.Services
+namespace JobDiscovery.Api.Services;
 
 public interface IJobProvider
 {
