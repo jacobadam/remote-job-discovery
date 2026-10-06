@@ -40,42 +40,24 @@ builder.Services.AddHttpClient<GreenhouseClient>(
 
 builder.Services.AddScoped<IJobProvider, AshbyJobService>();
 builder.Services.AddScoped<IJobProvider, GreenhouseJobService>();
+builder.Services.AddScoped<JobAggregationService>();
 
 var app = builder.Build();
 
 app.MapGet(
     "/api/jobs",
     async (
-        IEnumerable<IJobProvider> jobProviders,
+        JobAggregationService jobAggregationService,
         string? title,
         CancellationToken cancellationToken
     ) =>
     {
-        var jobTasks = jobProviders
-            .Select(provider =>
-            provider.GetRemoteJobsAsync(cancellationToken)
+        var jobs = await jobAggregationService.GetJobsAsync(
+             title,
+             cancellationToken
         );
 
-        var jobLists = await Task.WhenAll(jobTasks);
-
-        var jobs = jobLists
-            .SelectMany(jobList => jobList);
-
-        if (!string.IsNullOrWhiteSpace(title))
-        {
-            jobs = jobs.Where(job =>
-                job.Title.Contains(
-                    title.Trim(),
-                    StringComparison.OrdinalIgnoreCase
-                )
-            );
-        }
-
-        var orderedJobs = jobs
-            .OrderByDescending(job => job.PublishedAt)
-            .ToList();
-
-        return Results.Ok(orderedJobs);
+        return Results.Ok(jobs);
     }
 );
 

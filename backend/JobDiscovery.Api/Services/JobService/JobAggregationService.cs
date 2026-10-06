@@ -12,6 +12,7 @@ public class JobAggregationService
     }
 
     public async Task<IReadOnlyList<JobListing>> GetJobsAsync(
+      string? title,
       CancellationToken cancellationToken = default
     )
     {
@@ -20,10 +21,23 @@ public class JobAggregationService
             provider.GetRemoteJobsAsync(cancellationToken)
           );
 
-        var jobList = await Task.WhenAll(jobTasks)
-  
-    return jobList
-      .SelectMany(jobList => jobList)
-      .ToList();
+        var jobLists = await Task.WhenAll(jobTasks)
+
+
+    var jobs = jobLists
+        .SelectMany(jobList => jobList);
+
+        if (!string.IsNullOrWhiteSpace(title))
+        {
+            jobs = jobs.Where(job =>
+                job.Title.Contains(
+                    title.Trim(),
+                    StringComparison.OrdinalIgnoreCase
+                )
+            );
+        }
+        return jobs
+          .OrderByDescending(job => job.PublishedAt)
+          .ToList();
     }
 }
