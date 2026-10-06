@@ -1,3 +1,5 @@
+using JobDiscovery.Api.Models.Jobs;
+
 namespace JobDiscovery.Api.Services;
 
 public class JobAggregationService
@@ -21,11 +23,11 @@ public class JobAggregationService
             provider.GetRemoteJobsAsync(cancellationToken)
           );
 
-        var jobLists = await Task.WhenAll(jobTasks)
+        var jobLists = await Task.WhenAll(jobTasks);
 
 
-    var jobs = jobLists
-        .SelectMany(jobList => jobList);
+        var jobs = jobLists
+            .SelectMany(jobList => jobList);
 
         if (!string.IsNullOrWhiteSpace(title))
         {
