@@ -156,4 +156,41 @@ public class JobAggregationServiceTests
         Assert.Equal("Middle Job", jobs[1].Title);
         Assert.Equal("Older Job", jobs[2].Title);
     }
+    [Fact]
+    public async Task GetJobsAsync_TrimsTitleFilterWhitespace()
+    {
+        var provider = new FakeJobProvider(
+            new List<JobListing>
+            {
+            new()
+            {
+                Source = "Greenhouse",
+                SourceJobId = "1",
+                CompanyName = "Company A",
+                Title = "Software Engineer",
+                PublishedAt = DateTimeOffset.Parse("2026-10-01")
+            },
+            new()
+            {
+                Source = "Greenhouse",
+                SourceJobId = "2",
+                CompanyName = "Company B",
+                Title = "Product Designer",
+                PublishedAt = DateTimeOffset.Parse("2026-10-02")
+            }
+            }
+        );
+
+        var service = new JobAggregationService(
+            new IJobProvider[]
+            {
+            provider
+            }
+        );
+
+        var jobs = await service.GetJobsAsync("  software  ");
+
+        Assert.Single(jobs);
+        Assert.Equal("Software Engineer", jobs[0].Title);
+    }
 }
