@@ -48,12 +48,16 @@ app.MapGet(
     "/api/jobs",
     async (
         JobAggregationService jobAggregationService,
+        CancellationToken cancellationToken,
         string? title,
-        CancellationToken cancellationToken
+        int page = 1,
+        int pageSize = 20
     ) =>
     {
         var jobs = await jobAggregationService.GetJobsAsync(
              title,
+             page,
+             pageSize,
              cancellationToken
         );
 

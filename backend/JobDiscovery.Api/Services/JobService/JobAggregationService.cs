@@ -1,4 +1,5 @@
 using JobDiscovery.Api.Models.Jobs;
+using JobDiscovery.Api.Models.Common;
 
 namespace JobDiscovery.Api.Services;
 
@@ -13,8 +14,10 @@ public class JobAggregationService
         _jobProviders = jobProviders;
     }
 
-    public async Task<IReadOnlyList<JobListing>> GetJobsAsync(
+    public async Task<PagedResult<JobListing>> GetJobsAsync(
       string? title,
+      int page,
+      int pageSize,
       CancellationToken cancellationToken = default
     )
     {
@@ -38,8 +41,28 @@ public class JobAggregationService
                 )
             );
         }
-        return jobs
+        var orderedJobs = jobs
           .OrderByDescending(job => job.PublishedAt)
           .ToList();
+
+        var totalCount = orderedJobs.Count;
+
+        var pagedJobs = orderedJobs
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToList();
+
+        var totalPages = (int)Math.Ceiling(
+          totalCount / (double)pageSize
+        );
+
+        return new PagedResult<JobListing>
+        {
+            Items = pagedJobs,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            TotalPages = totalPages
+        };
     }
 }
