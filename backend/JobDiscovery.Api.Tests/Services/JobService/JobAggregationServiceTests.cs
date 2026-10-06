@@ -28,169 +28,188 @@ public class JobAggregationServiceTests
         var firstProvider = new FakeJobProvider(
             new List<JobListing>
             {
-            new()
-            {
-                Source = "Ashby",
-                SourceJobId = "1",
-                CompanyName = "Company A",
-                Title = "Software Engineer",
-                PublishedAt = DateTimeOffset.Parse("2026-10-01")
-            },
-            new()
-            {
-                Source = "Ashby",
-                SourceJobId = "2",
-                CompanyName = "Company B",
-                Title = "Frontend Engineer",
-                PublishedAt = DateTimeOffset.Parse("2026-10-02")
-            }
+                new()
+                {
+                    Source = "Ashby",
+                    SourceJobId = "1",
+                    CompanyName = "Company A",
+                    Title = "Software Engineer",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-01")
+                },
+                new()
+                {
+                    Source = "Ashby",
+                    SourceJobId = "2",
+                    CompanyName = "Company B",
+                    Title = "Frontend Engineer",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-02")
+                }
             }
         );
 
         var secondProvider = new FakeJobProvider(
             new List<JobListing>
             {
-            new()
-            {
-                Source = "Greenhouse",
-                SourceJobId = "3",
-                CompanyName = "Company C",
-                Title = "Backend Engineer",
-                PublishedAt = DateTimeOffset.Parse("2026-10-03")
-            }
+                new()
+                {
+                    Source = "Greenhouse",
+                    SourceJobId = "3",
+                    CompanyName = "Company C",
+                    Title = "Backend Engineer",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-03")
+                }
             }
         );
 
         var service = new JobAggregationService(
             new IJobProvider[]
             {
-            firstProvider,
-            secondProvider
+                firstProvider,
+                secondProvider
             }
         );
 
-        var jobs = await service.GetJobsAsync(null);
+        var result = await service.GetJobsAsync(
+            null,
+            1,
+            20
+        );
 
-        Assert.Equal(3, jobs.Count);
+        Assert.Equal(3, result.Items.Count);
     }
+
     [Fact]
     public async Task GetJobsAsync_FiltersJobsByTitle()
     {
         var provider = new FakeJobProvider(
             new List<JobListing>
             {
-            new()
-            {
-                Source = "Ashby",
-                SourceJobId = "1",
-                CompanyName = "Company A",
-                Title = "Software Engineer",
-                PublishedAt = DateTimeOffset.Parse("2026-10-01")
-            },
-            new()
-            {
-                Source = "Ashby",
-                SourceJobId = "2",
-                CompanyName = "Company B",
-                Title = "Product Designer",
-                PublishedAt = DateTimeOffset.Parse("2026-10-02")
-            }
+                new()
+                {
+                    Source = "Ashby",
+                    SourceJobId = "1",
+                    CompanyName = "Company A",
+                    Title = "Software Engineer",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-01")
+                },
+                new()
+                {
+                    Source = "Ashby",
+                    SourceJobId = "2",
+                    CompanyName = "Company B",
+                    Title = "Product Designer",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-02")
+                }
             }
         );
 
         var service = new JobAggregationService(
             new IJobProvider[]
             {
-            provider
+                provider
             }
         );
 
-        var jobs = await service.GetJobsAsync("software");
+        var result = await service.GetJobsAsync(
+            "software",
+            1,
+            20
+        );
 
-        Assert.Single(jobs);
-        Assert.Equal("Software Engineer", jobs[0].Title);
+        Assert.Single(result.Items);
+        Assert.Equal("Software Engineer", result.Items[0].Title);
     }
+
     [Fact]
     public async Task GetJobsAsync_OrdersJobsByPublishedAtDescending()
     {
         var provider = new FakeJobProvider(
             new List<JobListing>
             {
-            new()
-            {
-                Source = "Ashby",
-                SourceJobId = "1",
-                CompanyName = "Company A",
-                Title = "Older Job",
-                PublishedAt = DateTimeOffset.Parse("2026-10-01")
-            },
-            new()
-            {
-                Source = "Ashby",
-                SourceJobId = "2",
-                CompanyName = "Company B",
-                Title = "Newest Job",
-                PublishedAt = DateTimeOffset.Parse("2026-10-03")
-            },
-            new()
-            {
-                Source = "Ashby",
-                SourceJobId = "3",
-                CompanyName = "Company C",
-                Title = "Middle Job",
-                PublishedAt = DateTimeOffset.Parse("2026-10-02")
-            }
+                new()
+                {
+                    Source = "Ashby",
+                    SourceJobId = "1",
+                    CompanyName = "Company A",
+                    Title = "Older Job",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-01")
+                },
+                new()
+                {
+                    Source = "Ashby",
+                    SourceJobId = "2",
+                    CompanyName = "Company B",
+                    Title = "Newest Job",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-03")
+                },
+                new()
+                {
+                    Source = "Ashby",
+                    SourceJobId = "3",
+                    CompanyName = "Company C",
+                    Title = "Middle Job",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-02")
+                }
             }
         );
 
         var service = new JobAggregationService(
             new IJobProvider[]
             {
-            provider
+                provider
             }
         );
 
-        var jobs = await service.GetJobsAsync(null);
+        var result = await service.GetJobsAsync(
+            null,
+            1,
+            20
+        );
 
-        Assert.Equal("Newest Job", jobs[0].Title);
-        Assert.Equal("Middle Job", jobs[1].Title);
-        Assert.Equal("Older Job", jobs[2].Title);
+        Assert.Equal("Newest Job", result.Items[0].Title);
+        Assert.Equal("Middle Job", result.Items[1].Title);
+        Assert.Equal("Older Job", result.Items[2].Title);
     }
+
     [Fact]
     public async Task GetJobsAsync_TrimsTitleFilterWhitespace()
     {
         var provider = new FakeJobProvider(
             new List<JobListing>
             {
-            new()
-            {
-                Source = "Greenhouse",
-                SourceJobId = "1",
-                CompanyName = "Company A",
-                Title = "Software Engineer",
-                PublishedAt = DateTimeOffset.Parse("2026-10-01")
-            },
-            new()
-            {
-                Source = "Greenhouse",
-                SourceJobId = "2",
-                CompanyName = "Company B",
-                Title = "Product Designer",
-                PublishedAt = DateTimeOffset.Parse("2026-10-02")
-            }
+                new()
+                {
+                    Source = "Greenhouse",
+                    SourceJobId = "1",
+                    CompanyName = "Company A",
+                    Title = "Software Engineer",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-01")
+                },
+                new()
+                {
+                    Source = "Greenhouse",
+                    SourceJobId = "2",
+                    CompanyName = "Company B",
+                    Title = "Product Designer",
+                    PublishedAt = DateTimeOffset.Parse("2026-10-02")
+                }
             }
         );
 
         var service = new JobAggregationService(
             new IJobProvider[]
             {
-            provider
+                provider
             }
         );
 
-        var jobs = await service.GetJobsAsync("  software  ");
+        var result = await service.GetJobsAsync(
+            "  software  ",
+            1,
+            20
+        );
 
-        Assert.Single(jobs);
-        Assert.Equal("Software Engineer", jobs[0].Title);
+        Assert.Single(result.Items);
+        Assert.Equal("Software Engineer", result.Items[0].Title);
     }
 }
