@@ -10,4 +10,20 @@ public class JobAggregationService
     {
         _jobProviders = jobProviders;
     }
+
+    public async Task<IReadOnlyList<JobListing>> GetJobsAsync(
+      CancellationToken cancellationToken = default
+    )
+    {
+        var jobTasks = _jobProviders
+          .Select(provider =>
+            provider.GetRemoteJobsAsync(cancellationToken)
+          );
+
+        var jobList = await Task.WhenAll(jobTasks)
+  
+    return jobList
+      .SelectMany(jobList => jobList)
+      .ToList();
+    }
 }
