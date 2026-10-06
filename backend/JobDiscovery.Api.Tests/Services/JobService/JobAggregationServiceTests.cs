@@ -73,4 +73,41 @@ public class JobAggregationServiceTests
 
         Assert.Equal(3, jobs.Count);
     }
+    [Fact]
+    public async Task GetJobsAsync_FiltersJobsByTitle()
+    {
+        var provider = new FakeJobProvider(
+            new List<JobListing>
+            {
+            new()
+            {
+                Source = "Ashby",
+                SourceJobId = "1",
+                CompanyName = "Company A",
+                Title = "Software Engineer",
+                PublishedAt = DateTimeOffset.Parse("2026-10-01")
+            },
+            new()
+            {
+                Source = "Ashby",
+                SourceJobId = "2",
+                CompanyName = "Company B",
+                Title = "Product Designer",
+                PublishedAt = DateTimeOffset.Parse("2026-10-02")
+            }
+            }
+        );
+
+        var service = new JobAggregationService(
+            new IJobProvider[]
+            {
+            provider
+            }
+        );
+
+        var jobs = await service.GetJobsAsync("software");
+
+        Assert.Single(jobs);
+        Assert.Equal("Software Engineer", jobs[0].Title);
+    }
 }
